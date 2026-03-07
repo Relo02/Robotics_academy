@@ -1,0 +1,22 @@
+# Ignore build artifacts
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md

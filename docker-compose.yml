@@ -1,0 +1,66 @@
+# Docker Compose for ROS2 Humble + Gazebo Harmonic
+# ROS2 Course Setup - Compatible with Windows, Linux, and macOS
+
+services:
+  ros2-gazebo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ros2-humble-gazebo-harmonic:latest
+    container_name: ros2_course_container
+    
+    # Interactive terminal
+    stdin_open: true
+    tty: true
+    
+    # Network configuration
+    network_mode: host  # Required for ROS2 DDS communication
+    
+    # Environment variables
+    environment:
+      - DISPLAY=${DISPLAY:-host.docker.internal:0}
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_SOFTWARE=1  # Software rendering fallback
+      - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      # Gazebo environment
+      - GZ_SIM_RESOURCE_PATH=/home/ros2user/ros2_ws/src
+    
+    # Volume mounts
+    volumes:
+      # Mount workspace for persistent code storage
+      - ./ros2_ws:/home/ros2user/ros2_ws:rw
+      # X11 socket for GUI (Linux)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # For Windows with WSL2 - uncomment if needed
+      # - /mnt/wslg:/mnt/wslg:rw
+    
+    # Device access for GPU (Linux with NVIDIA)
+    # Uncomment the following for NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    
+    # Privileged mode may be needed for some hardware access
+    privileged: false
+    
+    # Resource limits (adjust based on student machine specs)
+    # Uncomment to limit resources if needed
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+
+# Optional: Additional service for running multiple instances
+# Useful for multi-robot simulations
+  # ros2-gazebo-node2:
+  #   extends:
+  #     service: ros2-gazebo
+  #   container_name: ros2_course_node2
+  #   environment:
+  #     - ROS_DOMAIN_ID=1
