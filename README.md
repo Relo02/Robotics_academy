@@ -1,118 +1,209 @@
-# ROS2 Humble + Gazebo Harmonic Docker Setup
+# Welcome to the Robotics Academy
 
-This Docker environment provides a complete ROS2 Humble and Gazebo Harmonic setup for the robotics course.
+This repository is your complete learning environment for the **ROS 2 Robotics Course**. Everything you need — simulation, examples, tutorials, and development tools — is pre-configured and ready to run inside a Docker container, regardless of your operating system.
 
-## Choose Your Operating System
+By the end of this course you will have built, programmed, and understood a complete differential-drive mobile robot from the ground up, covering everything from basic ROS 2 communication to real hardware integration.
 
-We provide optimized Docker configurations for each operating system:
+---
 
-| OS | Folder | Quick Start |
-|----|--------|-------------|
-| **Linux** | [`linux/`](linux/) | `./start.sh` |
-| **Windows** | [`windows/`](windows/) | `.\start.ps1` or `start.bat` |
-| **macOS** | [`macos/`](macos/) | `./start.sh` |
+## What You Will Learn
 
-Navigate to your OS folder and follow the README instructions there.
-In general, we recommend to do the dual boot/virtual machine for better perfomences and compatibility, specially if you have macos.
+The course is structured as a progressive journey through modern robotics software development:
 
-## What's Included
+| Section | Topic | Key Skills |
+|---------|-------|-----------|
+| 1 | Introduction to ROS 2 | Nodes, publishers, subscribers, topics |
+| 2 | Locomotion & Simulation | URDF/Xacro robot modeling, Gazebo, RViz |
+| 3 | Robot Control | ros2_control, controller manager, joystick teleop |
+| 4 | Kinematics | Coordinate frames, rotation matrices, pose transforms |
+| 5 | Differential Kinematics | Wheel-to-robot velocity conversion, Eigen matrices |
+| 6 | TF2 Library | Transform trees, static/dynamic broadcasters, quaternions |
+| 7 | Odometry | Dead reckoning, encoder integration, nav_msgs/Odometry |
+| 8 | Probability for Robotics | Gaussian noise, covariance, uncertainty modeling |
+| 9 | Sensor Fusion | Extended Kalman Filter, robot_localization |
+| 10 | Build the Real Robot | Hardware interfaces, serial communication, lifecycle nodes |
+| 11 | SLAM | Occupancy grid mapping, SLAM Toolbox, online/offline SLAM |
+| 12 | Autonomous Navigation | Nav2 stack, costmaps, path planning, behavior trees |
 
-- **ROS2 Humble** - Full desktop installation
-- **Gazebo Harmonic** - Latest Gazebo simulator
-- **ROS2-Gazebo Bridge** - Integration packages
-- **Development Tools** - colcon, vcstool, rosdep
-- **Visualization** - RViz2, rqt tools
-- **Common Packages** - xacro, robot_state_publisher, teleop
+Every section has a complete, buildable ROS 2 workspace and a detailed README explaining the concepts, code, and commands.
 
-## Directory Structure
+---
+
+## What Is Already Provided
+
+### Development Environment
+
+A fully pre-configured Docker image based on **Ubuntu 22.04 (Jammy)** containing:
+
+- **ROS 2 Humble** — full base installation with all core libraries
+- **Gazebo Harmonic** — physics simulator with ROS 2 bridge (`ros_gz`)
+- **ros2_control** + **ros2_controllers** — standard robot control framework
+- **RViz2** + **rqt** tools — visualization and introspection
+- **TF2 tools** — `view_frames`, `tf2_echo`, turtle_tf2 demo
+- **robot_localization** — EKF/UKF sensor fusion
+- **SLAM Toolbox** (`ros-humble-slam-toolbox`) — online/offline 2D SLAM with lifelong mapping
+- **Nav2** (`ros-humble-navigation2`, `ros-humble-nav2-bringup`) — complete autonomous navigation stack
+- **Joy** + **teleop** — joystick and keyboard teleoperation
+- **Build tools** — `colcon`, `rosdep`, `vcstool`, `cmake`
+- **Serial libraries** — `libserial-dev`, `python3-serial`, `python3-smbus`
+- **Python utilities** — `python3-tf-transformations`
+
+### Course Content
+
+**12 example workspaces** — one per course section — each containing fully working ROS 2 packages and a detailed README. Located at `examples/` and available read-only inside the container at `~/ros2_ws/examples/`.
+
+**Written tutorials** — step-by-step markdown guides located in `tutorials/`. The current series covers:
+
+- **TF2** — 6-part tutorial from introduction to debugging, based on the official ROS 2 documentation
+
+---
+
+## Getting Started
+
+### Step 1 — Choose your OS setup
+
+> We strongly recommend **dual-booting Linux** for the best performance and compatibility, especially on macOS. The Docker setup works on all platforms but Linux gives native GPU acceleration and zero emulation overhead.
+
+| OS | Folder | Start command |
+|----|--------|---------------|
+| Linux | [`linux/`](linux/) | `./start.sh` |
+| macOS | [`macos/`](macos/) | `./start.sh` |
+| Windows | [`windows/`](windows/) | `.\start.ps1` or `start.bat` |
+
+### Step 2 — Install Docker Desktop
+
+Download and install from: https://www.docker.com/products/docker-desktop/
+
+### Step 3 — Start the container
+
+Navigate to your OS folder and run the start script:
+
+```bash
+cd linux/       # or macos/ or windows/
+./start.sh
+```
+
+The first run will build the Docker image (this takes several minutes). Subsequent starts are instant.
+
+### Step 4 — Verify the installation
+
+Inside the container, run:
+
+```bash
+ros2 topic list
+gz sim shapes.sdf
+```
+
+If both commands succeed without errors, your environment is ready.
+
+---
+
+## Workspace Structure Inside the Container
+
+Once running, the container exposes this layout at `/home/ros2user/ros2_ws/`:
+
+```
+/home/ros2user/ros2_ws/
+├── src/            ← your own packages — edit on your host, build here
+├── build/          ← generated by colcon build
+├── install/        ← generated by colcon build
+├── log/            ← generated by colcon build
+├── examples/       ← course reference workspaces (read-only)
+│   ├── Section1_Introduction/
+│   ├── Section2_Locomotion/
+│   ├── Section3_Control/
+│   ├── Section4_Kinematics/
+│   ├── Section5_Differential_Kinematics/
+│   ├── Section6_TF2_Library/
+│   ├── Section7_Odometry/
+│   ├── Section8_Probability_for_Robotics/
+│   ├── Section9_Sensor_Fusion/
+│   └── Section10_Build_the_Robot/
+└── tutorials/      ← written guides (read-only)
+    └── tf2/
+```
+
+**`src/`** — this is your working area. It maps directly to `<OS>/ros2_ws/src/` on your host machine, so you can edit files with any IDE and build them inside the container. Everything here persists across container restarts.
+
+**`examples/`** — read-only reference workspaces. To experiment with an example, copy it into `src/`:
+
+```bash
+cp -r ~/ros2_ws/examples/Section6_TF2_Library/bumperbot_ws/src/* ~/ros2_ws/src/
+cb    # alias for: colcon build --symlink-install
+sw    # alias for: source install/setup.bash
+```
+
+**`tutorials/`** — written documentation. Open the markdown files in your host IDE or read them in the terminal with:
+
+```bash
+cat ~/ros2_ws/tutorials/tf2/README.md
+```
+
+---
+
+## Helpful Aliases
+
+These shortcuts are pre-configured in the container shell:
+
+| Alias | Expands to | Description |
+|-------|-----------|-------------|
+| `cb` | `colcon build --symlink-install` | Build the workspace |
+| `sw` | `source ~/ros2_ws/install/setup.bash` | Source the workspace |
+| `cbsw` | `cb && sw` | Build and source in one step |
+
+---
+
+## Repository Structure
 
 ```
 .
 ├── linux/              # Linux Docker setup
 │   ├── Dockerfile
 │   ├── docker-compose.yml
-│   ├── start.sh
-│   ├── stop.sh
-│   └── README.md
-├── windows/            # Windows Docker setup
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── start.ps1
-│   ├── start.bat
-│   ├── stop.ps1
+│   ├── start.sh / stop.sh
 │   └── README.md
 ├── macos/              # macOS Docker setup
 │   ├── Dockerfile
 │   ├── docker-compose.yml
-│   ├── start.sh
-│   ├── stop.sh
+│   ├── start.sh / stop.sh
 │   └── README.md
+├── windows/            # Windows Docker setup
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── start.ps1 / start.bat / stop.ps1
+│   └── README.md
+├── examples/           # One complete ROS 2 workspace per course section
+│   ├── Section1_Introduction/
+│   ├── ...
+│   ├── Section10_Build_the_Robot/
+│   ├── Section11_SLAM/
+│   └── Section12_Navigation/
+├── tutorials/          # Written step-by-step tutorials
+│   └── tf2/
 └── README.md           # This file
 ```
 
-## Quick Start (All Platforms)
-
-1. **Install Docker Desktop**
-   - Download from: https://www.docker.com/products/docker-desktop/
-
-2. **Navigate to your OS folder**
-   ```bash
-   cd linux/    # or windows/ or macos/
-   ```
-
-3. **Run the start script**
-   - Linux/macOS: `./start.sh`
-   - Windows: `.\start.ps1` or double-click `start.bat`
-
-4. **Test the installation** (inside the container)
-   ```bash
-   ros2 topic list
-   gz sim shapes.sdf
-   ```
-
-## ROS2 Workspace
-
-Each OS setup creates a `ros2_ws/` folder in the respective directory:
-- `linux/ros2_ws/`
-- `windows/ros2_ws/`
-- `macos/ros2_ws/`
-
-This folder is **shared** between your host machine and the container:
-- Edit code with your favorite IDE on your computer
-- Build and run in the container
-- Changes persist even after restarting the container
-
-## Helpful Aliases (Inside Container)
-
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `cb` | `colcon build --symlink-install` | Build workspace |
-| `sw` | `source install/setup.bash` | Source workspace |
-| `cbsw` | Build + Source | Combined |
+---
 
 ## Platform Notes
 
 ### Linux
-- Best performance with native GPU support
-- NVIDIA GPU acceleration available (see Linux README)
-- Full ROS2 DDS communication with host network
-
-### Windows
-- Requires WSL2 backend
-- Windows 11 (WSLg) recommended for best GUI support
-- Windows 10 users need VcXsrv
+Native performance, full GPU passthrough, host networking for ROS 2 DDS. NVIDIA GPU acceleration available — see [`linux/README.md`](linux/README.md).
 
 ### macOS
-- Requires XQuartz for GUI applications
-- Apple Silicon (M1/M2/M3) works via emulation
-- Performance may be slower than Linux
+Requires **XQuartz** for GUI windows (RViz, Gazebo). Apple Silicon (M1/M2/M3) works via emulation but may be slower. Software rendering is enabled automatically.
 
-## Getting Help
-
-1. Check the OS-specific README in your folder
-2. Common issues are covered in Troubleshooting sections
-3. ROS2 Documentation: https://docs.ros.org/en/humble/
-4. Gazebo Documentation: https://gazebosim.org/docs/harmonic
+### Windows
+Requires **WSL2** backend. Windows 11 with WSLg gives the best GUI experience. Windows 10 users need **VcXsrv** for display forwarding.
 
 ---
-*ROS2 Course Docker Environment v1.0*
+
+## Resources
+
+- ROS 2 Humble documentation: https://docs.ros.org/en/humble/
+- Gazebo Harmonic documentation: https://gazebosim.org/docs/harmonic
+- TF2 tutorial (official): https://docs.ros.org/en/humble/Tutorials/Intermediate/Tf2/Introduction-To-Tf2.html
+
+---
+
+*Robotics Academy — ROS 2 Course*

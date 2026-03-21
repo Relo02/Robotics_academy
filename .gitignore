@@ -1,0 +1,9 @@
+# Ignore ROS workspace artifacts everywhere in the repo
+**/build/
+**/install/
+**/log/
+
+# Ignore gif and mp4 files everywhere in the repo
+**/*.mp4
+*.gif
+

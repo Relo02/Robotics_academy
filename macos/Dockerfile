@@ -52,6 +52,25 @@ RUN apt-get update && apt-get install -y \
     ros-humble-robot-state-publisher \
     ros-humble-joint-state-publisher \
     ros-humble-joint-state-publisher-gui \
+    ros-humble-ros2-control \
+    ros-humble-ros2-controllers \
+    ros-humble-joy \
+    ros-humble-joy-teleop \
+    ros-humble-robot-localization \
+    ros-humble-turtlesim \
+    ros-humble-turtle-tf2-py \
+    ros-humble-tf2-tools \
+    ros-humble-slam-toolbox \
+    ros-humble-navigation2 \
+    ros-humble-nav2-bringup \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install system and Python dependencies
+RUN apt-get update && apt-get install -y \
+    libserial-dev \
+    python3-serial \
+    python3-smbus \
+    python3-tf-transformations \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for the students
