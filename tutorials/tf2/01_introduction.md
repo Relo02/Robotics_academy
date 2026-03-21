@@ -18,15 +18,15 @@ TF2 answers all of these questions automatically, as long as each part broadcast
 
 TF2 maintains a **tree** (directed acyclic graph) of coordinate frames. Each edge in the tree is a transform — a combination of translation and rotation — between a parent frame and a child frame.
 
-```
-world
- └── odom
-      └── base_footprint
-           └── base_link
-                ├── wheel_left_link
-                ├── wheel_right_link
-                ├── caster_front_link
-                └── camera_link
+```mermaid
+graph TD
+    world --> odom
+    odom --> base_footprint
+    base_footprint --> base_link
+    base_link --> wheel_left_link
+    base_link --> wheel_right_link
+    base_link --> caster_front_link
+    base_link --> camera_link
 ```
 
 Any transform between any two frames in the tree can be computed automatically by chaining the edges along the path between them.

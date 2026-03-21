@@ -12,22 +12,22 @@ This demo demonstrates:
 
 ## System Architecture
 
-```
-turtle_teleop_key
-      │ /turtle1/cmd_vel
-      ▼
-  turtlesim_node ──────────────────────────────────────┐
-      │ /turtle1/pose                /turtle2/pose      │
-      ▼                              ▼                  │
-turtle1_tf2_broadcaster    turtle2_tf2_broadcaster      │
-      │ /tf (world→turtle1)   /tf (world→turtle2)       │
-      ▼                              ▼                  │
-      └──────────── TF2 Buffer ──────┘                  │
-                         │                              │
-                         ▼                              │
-              turtle_tf2_listener                       │
-                         │ /turtle2/cmd_vel             │
-                         └──────────────────────────────┘
+```mermaid
+flowchart TD
+    teleop[turtle_teleop_key]
+    turtlesim[turtlesim_node]
+    b1[turtle1_tf2_broadcaster]
+    b2[turtle2_tf2_broadcaster]
+    buf[TF2 Buffer]
+    listener[turtle_tf2_listener]
+
+    teleop -->|/turtle1/cmd_vel| turtlesim
+    turtlesim -->|/turtle1/pose| b1
+    turtlesim -->|/turtle2/pose| b2
+    b1 -->|/tf world→turtle1| buf
+    b2 -->|/tf world→turtle2| buf
+    buf --> listener
+    listener -->|/turtle2/cmd_vel| turtlesim
 ```
 
 1. Both turtles broadcast their pose as a TF2 transform (`world → turtleN`)
@@ -87,10 +87,10 @@ evince frames.pdf   # or: xdg-open frames.pdf
 
 You will see:
 
-```
-world
- ├── turtle1
- └── turtle2
+```mermaid
+graph TD
+    world --> turtle1
+    world --> turtle2
 ```
 
 ### Step 4 — Echo a Transform

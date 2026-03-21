@@ -28,10 +28,10 @@ ros2 run tf2_tools view_frames
 
 **Example output:**
 
-```
-world
- ├── turtle1    (published by turtle_tf2_broadcaster, 62.5 Hz, 0.000 sec old)
- └── turtle2    (published by turtle_tf2_broadcaster, 62.5 Hz, 0.000 sec old)
+```mermaid
+graph TD
+    world --> turtle1["turtle1 — turtle_tf2_broadcaster, 62.5 Hz, 0.000 sec old"]
+    world --> turtle2["turtle2 — turtle_tf2_broadcaster, 62.5 Hz, 0.000 sec old"]
 ```
 
 The PDF shows:

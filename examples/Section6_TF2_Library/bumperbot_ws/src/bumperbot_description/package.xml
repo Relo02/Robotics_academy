@@ -4,7 +4,7 @@
   <name>bumperbot_description</name>
   <version>0.0.0</version>
   <description>Bumperbot Description package</description>
-  <maintainer email="antonio.brandi@outlook.it">Antonio Brandi</maintainer>
+  <maintainer email="ortolore@gmail.com">Lorenzo Ortolani</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

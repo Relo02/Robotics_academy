@@ -49,10 +49,10 @@ sudo apt-get update && sudo apt-get install -y \
 
 The demo and all tutorials use three frames:
 
-```
-world
-  ├── turtle1   (moves with keyboard input)
-  └── turtle2   (follows turtle1 using a TF2 listener)
+```mermaid
+graph TD
+    world --> turtle1["turtle1 (moves with keyboard input)"]
+    world --> turtle2["turtle2 (follows turtle1 using a TF2 listener)"]
 ```
 
 - `world` is the fixed global frame

@@ -3,9 +3,9 @@
   <name>bumperbot_controller</name>
   <version>0.0.0</version>
   <description>The bumperbot_controller package</description>
-  <maintainer email="antonio.brandi@outlook.it">Antonio Brandi</maintainer>
+  <maintainer email="ortolore@gmail.com">Lorenzo Ortolani</maintainer>
   <license>Apache 2.0</license>
-  <author email="antonio.brandi@outlook.it">Antonio Brandi</author>
+  <author email="ortolore@gmail.com">Lorenzo Ortolani</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
