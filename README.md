@@ -34,12 +34,4 @@ graph LR
 
 ---
 
-## Resources
-
-- ROS 2 Humble documentation: https://docs.ros.org/en/humble/
-- Gazebo Harmonic documentation: https://gazebosim.org/docs/harmonic
-- TF2 tutorial (official): https://docs.ros.org/en/humble/Tutorials/Intermediate/Tf2/Introduction-To-Tf2.html
-
----
-
 *Robotics Academy — ROS 2 Course*
