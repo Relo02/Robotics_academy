@@ -3,6 +3,7 @@
 This repository is your complete learning environment for the **ROS 2 Robotics Course**. Everything you need — simulation, examples, tutorials, and development tools — is pre-configured and ready to run inside a Docker container, regardless of your operating system.
 
 By the end of this course you will have built, programmed, and understood a complete differential-drive mobile robot from the ground up, covering everything from basic ROS 2 communication to real hardware integration.
+we will be covering also more advanced robotic systems, such as quadruped robots and UAV case studies
 
 ---
 
