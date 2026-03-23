@@ -1,0 +1,108 @@
+Panels:
+  - Class: rviz_common/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded: ~
+      Splitter Ratio: 0.5
+    Tree Height: 549
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Views
+    Name: Views
+    Expanded: true
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Value: Orbit (rviz)
+
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Name: Grid
+      Plane: XY
+      Plane Cell Count: 20
+    - Class: rviz_default_plugins/RobotModel
+      Description Source: Topic
+      Description Topic: /robot_description
+      Enabled: true
+      Name: RobotModel
+      TF Prefix: ""
+    - Alpha: 1
+      Class: rviz_default_plugins/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: OccupancyMap
+      Topic:
+        Value: /map
+      Update Topic:
+        Value: /map_updates
+      Use Timestamp: false
+    - Class: rviz_default_plugins/LaserScan
+      Enabled: true
+      Name: LiDAR
+      Size (m): 0.05
+      Style: Points
+      Topic:
+        Value: /scan
+      Color Transformer: FlatColor
+      Color: 255; 50; 50
+    - Class: rviz_default_plugins/Odometry
+      Enabled: true
+      Name: WheelOdom
+      Topic:
+        Value: /odom
+      Keep: 200
+      Color: 200; 200; 0
+    - Class: rviz_default_plugins/Odometry
+      Enabled: true
+      Name: EKF_Odom
+      Topic:
+        Value: /odometry/filtered
+      Keep: 200
+      Color: 50; 255; 50
+    - Class: rviz_default_plugins/Pose
+      Enabled: true
+      Name: ICP_Pose
+      Topic:
+        Value: /icp_pose
+      Color: 255; 100; 0
+      Arrow Length: 0.5
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Marker Scale: 0.5
+      Update Interval: 0.1
+
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: map
+    Frame Rate: 30
+
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Target Frame: base_footprint
+      Value: Orbit (rviz)
