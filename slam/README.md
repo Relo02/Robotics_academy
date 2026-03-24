@@ -9,7 +9,7 @@ This folder contains two complementary learning tracks for probabilistic robotic
 
 ## Part 1 — Notebooks
 
-The notebooks follow the curriculum originally developed in [hello-slam](hello-slam/). They are organised in four modules with a clear pedagogical progression.
+The notebooks are organised in four modules with a pedagogical progression.
 
 ```
 notebooks/
@@ -18,7 +18,6 @@ notebooks/
 ├── 2_particle_filters/
 ├── 3_graph_based/
 ├── figures/             ← shared assets used by all notebooks
-└── hello-slam/          ← upstream submodule (reference copy)
 ```
 
 Figures are referenced with relative paths (`../figures/…`) and resolve automatically from any notebook subdirectory.
