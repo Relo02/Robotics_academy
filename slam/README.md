@@ -28,7 +28,7 @@ Figures are referenced with relative paths (`../figures/…`) and resolve automa
 
 | Notebook | Description |
 |---|---|
-| `0_introduction/0_intro.ipynb` | Course overview: motivation, notation, the SLAM problem statement, and a map of the modules ahead. |
+| `0_introduction/0_intro.ipynb` | Presents motivation, notation, the SLAM problem statement, and a map of the modules ahead. |
 
 ---
 
