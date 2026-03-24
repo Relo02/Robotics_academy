@@ -228,13 +228,9 @@ ros2 run tf2_tools view_frames
 
 ```bash
 cd ros2_slam_ws
-rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
 source install/setup.bash
 ```
-
-Dependencies: ROS 2 Humble (or later), `gazebo_ros_pkgs`, `ros2_control`, `diff_drive_controller`, `robot_state_publisher`, `rviz2`, `xacro`, `numpy`.
-
 ---
 
 ## Notebook ↔ ROS 2 mapping
