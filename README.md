@@ -1,4 +1,4 @@
-# Autonomous Navigation on Unitree Go2 (branch `unitree_go2`)
+# Autonomous Navigation on Unitree Go2
 
 The `unitree_go2` branch extends this course with a real quadruped robot project: **autonomous navigation on the Unitree Go2** using SLAM and Nav2, running in a Gazebo simulation with a Velodyne VLP-16 3D LiDAR.
 
