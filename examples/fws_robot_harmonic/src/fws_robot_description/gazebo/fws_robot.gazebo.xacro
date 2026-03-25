@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="fws_robot_gazebo">
+
+    <!-- =============== Gazebo =============== -->
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find fws_robot_description)/config/fws_robot_sim.yaml</parameters>
+      </plugin>
+      <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+        <render_engine>ogre2</render_engine>
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="lidar_head_link" >
+      <sensor name="lidar_head_link" type="gpu_lidar">
+        <gz_frame_id>lidar_head_link</gz_frame_id>
+        <topic>scan</topic>
+        <update_rate>30</update_rate>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>2800</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14</min_angle>
+              <max_angle>3.14</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>0.1</resolution>
+              <min_angle>0.0</min_angle>
+              <max_angle>0.0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.2</min>
+            <max>30.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <frame_id>/lidar_head_link</frame_id>
+        </lidar>
+        <alwaysOn>ture</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+    
+</robot>

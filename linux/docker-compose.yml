@@ -31,6 +31,8 @@ services:
       # Course examples mounted read-write to allow editing/building in-place
       - ../examples:/home/ros2user/ros2_ws/examples:rw
       - ../tutorials:/home/ros2user/ros2_ws/tutorials:ro
+      # Mount the differential drive robot slam example
+      - ../examples/fws_robot_harmonic:/home/ros2user/ros2_ws/examples/fws_robot_harmonic:rw
       # X11 socket for GUI
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       # X11 authentication
@@ -38,7 +40,12 @@ services:
     
     # For hardware access (joysticks, cameras, etc.)
     privileged: false
-    
+
+    # Add render/video groups so ros2user can access /dev/dri devices
+    group_add:
+      - "44"   # video
+      - "992"  # render
+
     # Device access
     devices:
       - /dev/dri:/dev/dri  # GPU access for hardware acceleration

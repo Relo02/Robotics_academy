@@ -6,4 +6,4 @@
 # Ignore gif and mp4 files everywhere in the repo
 **/*.mp4
 *.gif
-
+**myenv/
