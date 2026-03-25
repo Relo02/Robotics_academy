@@ -94,7 +94,7 @@ docker start racademy
 To enter into the shell:
 
 ```
-docker exec -it racademy /bin/sh
+docker exec -it --user ubuntu racademy bash
 ```
 
 ---
