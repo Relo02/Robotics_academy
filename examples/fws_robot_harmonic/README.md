@@ -240,6 +240,8 @@ The `joint_state_broadcaster` must be active before the velocity/position contro
 
 The `Commander` node runs at **50 Hz** and bridges `/cmd_vel` (Twist) to the two controller topics.
 
+> For a detailed derivation of the inverse kinematics and the full `cmd_vel` → low-level command pipeline see [src/control_pipeline.md](src/control_pipeline.md).
+
 ### Steering modes
 
 | Mode | Trigger | Steering | Use case |
