@@ -9,6 +9,7 @@
   <xacro:include filename="$(find fws_robot_description)/robots/parts/wheel/wheel.urdf.xacro"/>
   <xacro:include filename="$(find fws_robot_description)/robots/parts/lidar_base/lidar_base.urdf.xacro"/>
   <xacro:include filename="$(find fws_robot_description)/robots/parts/lidar_head/lidar_head.urdf.xacro"/>
+  <xacro:include filename="$(find fws_robot_description)/robots/parts/imu/imu.urdf.xacro"/>
   <xacro:property name="M_PI" value="3.14159274"/>
 
   <material name="gray">
@@ -24,6 +25,11 @@
   <xacro:base_v0 parent="base_footprint"> <!-- xacro:base_v0 parent="base_footprint" -->
 	<origin xyz="0 0 0"/>
   </xacro:base_v0>
+
+  <!-- IMU -->
+  <xacro:imu_v0 parent="base_link">
+    <origin xyz="0 0 0.017"/>
+  </xacro:imu_v0>
 
   <!-- lidar_base -->
   <xacro:lidar_base_v0 parent="base_link">
@@ -83,6 +89,9 @@
 
   <!-- Base -->
   <xacro:base_gazebo_v0/>
+
+  <!-- IMU -->
+  <xacro:imu_gazebo_v0/>
 
   <!-- lidar base -->
   <xacro:lidar_base_gazebo_v0/>
