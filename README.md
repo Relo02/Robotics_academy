@@ -117,6 +117,7 @@ Once running, the container exposes this layout at `/home/ros2user/ros2_ws/`:
 │   └── fws_robot_harmonic/     ← FWS robot: URDF, Gazebo, ros2_control, kinematics
 └── tutorials/      ← written guides (read-only)
     └── tf2/
+└── racademy_ws/    ← your personal workspace for practice (read-write)
 ```
 
 **`src/`** — this is your working area. It maps directly to `<OS>/ros2_ws/src/` on your host machine, so you can edit files with any IDE and build them inside the container. Everything here persists across container restarts.
@@ -125,6 +126,8 @@ Once running, the container exposes this layout at `/home/ros2user/ros2_ws/`:
 
 **`tutorials/`** — written documentation. Open the markdown files in your host IDE.
 This section provides you some further explanation about some ROS2 functionalities that are not fully covered during lecture. All the written markdowns are referenced to the official ROS2 wiki documentation
+
+**`racademy_ws/`** — this is your personal workspace for practice. You can create packages here, build them, and run them. This folder is also mapped to your host for easy editing.
 
 ---
 
