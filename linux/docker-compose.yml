@@ -31,6 +31,7 @@ services:
       # Course examples mounted read-write to allow editing/building in-place
       - ../examples:/home/ros2user/ros2_ws/examples:rw
       - ../tutorials:/home/ros2user/ros2_ws/tutorials:ro
+      - ../racademy_ws:/home/ros2user/racademy_ws:rw
       # X11 socket for GUI
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       # X11 authentication

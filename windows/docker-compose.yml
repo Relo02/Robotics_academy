@@ -35,6 +35,7 @@ services:
       # Course examples mounted read-write to allow editing/building in-place
       - ../examples:/home/ros2user/ros2_ws/examples:rw
       - ../tutorials:/home/ros2user/ros2_ws/tutorials:ro
+      - ../racademy_ws:/home/ros2user/racademy_ws:rw
       # WSLg mounts for GUI (Windows 11)
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /mnt/wslg:/mnt/wslg:rw
@@ -68,3 +69,4 @@ services:
 #       - GZ_SIM_RESOURCE_PATH=/home/ros2user/ros2_ws/src
 #     volumes:
 #       - ./ros2_ws:/home/ros2user/ros2_ws:rw
+#       - ../racademy_ws:/home/ros2user/racademy_ws:rw
