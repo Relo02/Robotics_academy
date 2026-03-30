@@ -28,5 +28,5 @@ echo Type 'exit' to leave the container.
 echo ==========================================
 echo.
 
-docker exec -it ros2_course_container bash
+docker exec -it ros2-gazebo bash
 pause

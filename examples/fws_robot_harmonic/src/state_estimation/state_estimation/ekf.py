@@ -45,8 +45,8 @@ class EKFStateEstimator(Node):
         self._P = np.eye(self.N) * 0.1
 
         # ── Process noise Q ─────────────────────────────────────────────
-        # Tuned for the robot's IMU noise (stddev: accel 1.7e-2, gyro 2e-4)
-        self._Q = np.diag([1e-2, 1e-2, 5e-3, 5e-3, 1e-4])
+        # Tuned for the robot's IMU noise
+        self._Q = np.diag([1e-2, 1e-2, 5e-3, 5e-3, 1e-2])
 
         # ── Scan-matching measurement noise R ───────────────────────────
         # z = [x, y, yaw]
@@ -60,7 +60,11 @@ class EKFStateEstimator(Node):
 
         # ── Scan-matching bookkeeping ───────────────────────────────────
         self._prev_pts: Optional[np.ndarray] = None
+        self._last_scan_t: Optional[float] = None
         self._sm_pose = np.zeros(3)     # accumulated [x, y, yaw]
+
+        # ── ICP rejection threshold (RMSE in metres) ────────────────────
+        self._icp_max_rmse = 0.3
 
         # ── ROS I/O ─────────────────────────────────────────────────────
         self._imu_sub = self.create_subscription(
@@ -129,6 +133,8 @@ class EKFStateEstimator(Node):
     #  LiDAR callback — correction step
     # ================================================================== #
     def _scan_cb(self, msg: LaserScan) -> None:
+        t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+
         pts = self._scan_to_pts(msg)
         if pts is None:
             return
@@ -139,11 +145,22 @@ class EKFStateEstimator(Node):
 
         if self._prev_pts is None:
             self._prev_pts = pts
+            self._last_scan_t = t
             return
 
+        # Use gyro-predicted yaw change as ICP initial guess to handle fast rotation
+        dt_scan = t - self._last_scan_t if self._last_scan_t is not None else 0.0
+        self._last_scan_t = t
+        init_dyaw = self._wz * dt_scan
+
         # ICP: estimate relative motion (source = prev scan, target = current)
-        dx, dy, dyaw = self._icp(self._prev_pts, pts)
+        dx, dy, dyaw, rmse = self._icp(self._prev_pts, pts, init_dyaw=init_dyaw)
         self._prev_pts = pts
+
+        # Reject degenerate ICP solutions (poor scan overlap, e.g. during fast spin)
+        if rmse > self._icp_max_rmse:
+            self.get_logger().warn(f'ICP rejected: RMSE={rmse:.3f} m > {self._icp_max_rmse} m')
+            return
 
         # Accumulate relative transform into world-frame scan-matching pose
         cx, cy, cyaw = self._sm_pose
@@ -171,7 +188,9 @@ class EKFStateEstimator(Node):
 
         self._x += K @ innov
         self._x[self.IYAW] = _wrap_angle(self._x[self.IYAW])
-        self._P = (np.eye(self.N) - K @ H) @ self._P
+        # Joseph form: numerically stable, keeps P symmetric positive-definite
+        IKH = np.eye(self.N) - K @ H
+        self._P = IKH @ self._P @ IKH.T + K @ self._R_scan @ K.T
 
     # ================================================================== #
     #  Helpers
@@ -200,21 +219,29 @@ class EKFStateEstimator(Node):
     @staticmethod
     def _icp(source: np.ndarray,
              target: np.ndarray,
+             init_dyaw: float = 0.0,
              max_iter: int = 30,
-             tol: float = 1e-4) -> Tuple[float, float, float]:
+             tol: float = 1e-4) -> Tuple[float, float, float, float]:
         """
         Point-to-point 2-D ICP (SVD closed-form).
 
-        Returns (dx, dy, dyaw): rigid transform mapping source -> target,
-        expressed in the source frame.
+        init_dyaw: initial rotation guess (radians) — use gyro prediction to
+                   help convergence during fast rotation.
+
+        Returns (dx, dy, dyaw, rmse): rigid transform mapping source -> target
+        expressed in the source frame, plus final RMSE of matched pairs.
         """
         src = source.copy()
-        R_acc = np.eye(2)
-        t_acc = np.zeros(2)
         tree = KDTree(target)
 
+        # Apply initial rotation guess so ICP starts near the true solution
+        c, s = np.cos(init_dyaw), np.sin(init_dyaw)
+        R_acc = np.array([[c, -s], [s, c]])
+        t_acc = np.zeros(2)
+        src = (R_acc @ src.T).T
+
         for _ in range(max_iter):
-            _, idx = tree.query(src, k=1)
+            dists, idx = tree.query(src, k=1)
             tgt_matched = target[idx]
 
             mu_s = src.mean(axis=0)
@@ -237,7 +264,11 @@ class EKFStateEstimator(Node):
             if np.linalg.norm(t) < tol and step_angle < tol:
                 break
 
-        return float(t_acc[0]), float(t_acc[1]), float(np.arctan2(R_acc[1, 0], R_acc[0, 0]))
+        # Final RMSE for convergence quality check
+        final_dists, _ = tree.query(src, k=1)
+        rmse = float(np.sqrt(np.mean(final_dists ** 2)))
+
+        return float(t_acc[0]), float(t_acc[1]), float(np.arctan2(R_acc[1, 0], R_acc[0, 0])), rmse
 
     def _publish(self, stamp) -> None:
         """Publish /ekf_odom and broadcast odom -> base_link TF."""
