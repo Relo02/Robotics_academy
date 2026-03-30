@@ -1,245 +1,290 @@
-# Chapter 6 – Bringing the Robot to Life in Gazebo (Ignition / Gazebo Sim)
+# Chapter 6 – Bringing the Robot to Life in Gazebo (Ignition / Gazebo Sim)
 
-> _Goal_: Spawn **racademy_ws** into the physics simulator, complete with realistic inertia, collision geometry, and friction coefficients—then bridge simulation time back to ROS 2.
+> _Goal_: spawn **racademy** into Gazebo Sim using the `racademy_description` package, with a cleaner URDF split, reasonable inertias, simplified collision geometry, and ROS 2 simulation time.
 
-## 1  Why Gazebo Ignition?
+## 1 Why Gazebo Sim?
 
-*Gazebo Ignition* (rebranded simply **Gazebo Sim** since 2023) is the next‑generation simulator for robots, offering modular rendering engines, advanced physics solvers, and a tight integration layer (`ros_gz_*` packages) for ROS 2. Compared with “Gazebo Classic,” Ignition uses a modern transport layer and C++17 codebase, while the ROS bridge automatically exposes everything as native ROS topics, services, and parameters.
+Gazebo Sim is the physics simulator we use to move from a static URDF in RViz to a robot that can exist in a world, collide with the ground, and publish simulated time.
 
 Outcome of this chapter:
 
-1. Add Gazebo‑specific tags without cluttering the visualization URDF.
-2. Provide simplified collision shapes to speed up the solver.
-3. Write a launch file that
-   - converts Xacro → URDF,
-   - publishes `/robot_description`,
-   - sets *simulation time*,
-   - spawns the robot into an **empty world**, and
-   - starts the ROS↔Gazebo clock bridge.
+1. Split Gazebo-specific settings out of the main URDF.
+2. Add inertial blocks so the model is usable in simulation.
+3. Replace expensive collision meshes with simpler shapes where appropriate.
+4. Launch Gazebo Sim, publish `/robot_description`, spawn the robot, and bridge `/clock`.
 
-## 2  Creating `racademy_ws_gazebo.xacro`
+## 2 Creating Supporting Xacro Files
 
-Place the file in *`racademy_ws_description/urdf/racademy_ws_gazebo.xacro`*.
+Place these files in `racademy_ws/src/racademy_description/urdf/`:
+
+- `materials.xacro`
+- `macros.xacro`
+- `racademy.gazebo.xacro`
+
+This keeps the main robot file readable:
+
+- `materials.xacro`: reusable URDF materials such as `black`, `green`, and `orange`
+- `macros.xacro`: small inertia helpers like `box_inertia`, `cylinder_inertia`, and `sphere_inertia`
+- `racademy.gazebo.xacro`: Gazebo-only tags such as visual materials and wheel contact parameters
+
+Example Gazebo fragment:
 
 ```xml
-<?xml version="1.0"?>                                   <!-- 1 -->
-<robot name="racademy_ws" xmlns:xacro="http://ros.org/wiki/xacro"> <!-- 2 -->
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- 3  High‑friction parameters for the drive wheels ▲ ▲ ▲ -->
-  <gazebo reference="wheel_left_link">                   <!-- 3 -->
-    <mu1>1e15</mu1>                                       <!-- 4 -->
-    <mu2>1e15</mu2>                                       <!-- 5 -->
-    <kp>1e12</kp>                                         <!-- 6 -->
-    <kd>10</kd>                                           <!-- 7 -->
-    <minDepth>0.001</minDepth>                            <!-- 8 -->
-    <maxVel>0.1</maxVel>                                  <!-- 9 -->
-    <fdir1>1 0 0</fdir1>                                  <!-- 10 -->
+  <gazebo reference="left_wheel_link">
+    <material>Gazebo/Black</material>
+    <mu1>5.0</mu1>
+    <mu2>5.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <fdir1>1 0 0</fdir1>
   </gazebo>
 
-  <gazebo reference="wheel_right_link"> …same as above… </gazebo>
-
-  <!-- 11  Lower friction on casters so they can swivel freely -->
-  <gazebo reference="caster_front_link">                 <!-- 11 -->
-    <mu1>0.1</mu1><mu2>0.1</mu2><kp>1e6</kp><kd>100</kd>
-    <minDepth>0.001</minDepth><maxVel>1.0</maxVel>
+  <gazebo reference="right_wheel_link">
+    <material>Gazebo/Black</material>
+    <mu1>5.0</mu1>
+    <mu2>5.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <fdir1>1 0 0</fdir1>
   </gazebo>
-  <gazebo reference="caster_rear_link"> …identical… </gazebo>
+
 </robot>
 ```
 
-| **Line(s)** | **Purpose**                                                                                                                                                                                                                                                                                                                                               |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1           | Standard XML header.                                                                                                                                                                                                                                                                                                                                      |
-| 2           | Root element; we only store *Gazebo* extensions here.                                                                                                                                                                                                                                                                                                     |
-| 3–10        | Wheel friction parameters. `mu1`/`mu2` are Coulomb friction coefficients in the two principal directions. They’re set absurdly high so the differential drive **bites** the ground during odometry tests. `kp`/`kd` form a contact"spring–damper" model to keep penetration minimal. `fdir1` forces the friction direction to align with the wheel tread. |
-| 11–         | Casters get small friction so they don’t steer the robot.                                                                                                                                                                                                                                                                                                 |
+Why this split helps:
 
-## 3  Extending the Main URDF with Inertias, Collisions, and the Gazebo Include
+- the main robot xacro stays focused on links and joints
+- Gazebo parameters stay isolated and easy to tune later
+- materials and inertia formulas can be reused cleanly
 
-Open *`racademy_ws_description/urdf/racademy_ws.urdf.xacro`* and add three key changes:
+## 3 Extending the Main URDF
 
-1. **Include the Gazebo fragment** right after the XML header:
+Open `racademy_ws/src/racademy_description/urdf/racademy.urdf.xacro`.
 
-   ```xml
-   <xacro:include filename="$(find racademy_ws_description)/urdf/racademy_ws_gazebo.xacro"/>
-   ```
+Three important updates were made.
 
-2. **Inertial blocks** (`<inertial>`) for every link—taken from CAD or estimated via MeshLab.
-3. **Collision geometry**: we reuse the full chassis STL, but **replace the wheel meshes with simple `<sphere>` shapes**(radius ≈ wheel radius) to cut collision computation time.
+### 3.1 Include the helper files
 
-An excerpt for the right wheel (annotated):
+At the top of the file:
 
 ```xml
-<link name="wheel_right_link">
-  <inertial> …mass & inertia matrix… </inertial>
+<xacro:include filename="$(find racademy_description)/urdf/materials.xacro"/>
+<xacro:include filename="$(find racademy_description)/urdf/macros.xacro"/>
+<xacro:include filename="$(find racademy_description)/urdf/racademy.gazebo.xacro"/>
+```
+
+### 3.2 Add inertial blocks
+
+Every physical link now has an `<inertial>` section:
+
+- `base_link`
+- `left_wheel_link`
+- `right_wheel_link`
+- `computer_link`
+- `camera_link`
+
+Example:
+
+```xml
+<inertial>
+  <origin xyz="0 0 0" rpy="0 0 0"/>
+  <mass value="${wheel_mass}"/>
+  <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+</inertial>
+```
+
+This is enough to make the model physically valid for simulation without overcomplicating the chapter.
+
+### 3.3 Simplify collision geometry
+
+The visual meshes are kept for appearance, but some collision geometry is simplified:
+
+- chassis: still uses the mesh collision
+- wheels: use `<sphere radius="${wheel_radius}"/>`
+- computer: uses a small box
+- camera: uses a small box
+
+Example wheel link:
+
+```xml
+<link name="left_wheel_link">
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <mass value="${wheel_mass}"/>
+    <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+  </inertial>
 
   <visual>
-    <origin xyz="0 0 0" rpy="1.57 0 0"/>
-    <geometry><mesh filename="…/wheel_right_link.STL"/></geometry>
+    <origin xyz="0.00001 -0.05957 0.0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://racademy_description/meshes/duckiebot_leftwheel.dae"/>
+    </geometry>
+    <material name="black"/>
   </visual>
 
-  <collision>                                          <!-- A -->
-    <origin xyz="0 -0.015 0" rpy="1.57 0 0"/>       <!-- B -->
-    <geometry><sphere radius="0.033"/></geometry>    <!-- C -->
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <sphere radius="${wheel_radius}"/>
+    </geometry>
   </collision>
 </link>
 ```
 
-| **A** | Collision tag used only by the physics engine. | | **B** | Slight offset so the sphere hugs the tread. | | **C** | A 33 mm sphere ≈ wheel radius → simulation stays fast.
+Why simplify collisions:
 
-Repeat for the left wheel and casters.
+- Gazebo contacts are more stable with primitives than with triangle meshes
+- simulation is faster
+- the wheels behave more predictably on the ground
 
-> **Hint** – If you later switch to *ODE* or *Bullet* inside Gazebo, primitive shapes dramatically improve contact stability over triangle meshes.
+## 4 Creating `gazebo.launch.py`
 
-## 4  Creating `gazebo.launch.py`
+Place the file in `racademy_ws/src/racademy_description/launch/gazebo.launch.py`.
 
-Place the file in *`racademy_ws_description/launch/gazebo.launch.py`*.
+This launch file now works with the current package layout:
+
+- package: `racademy_description`
+- default model: `urdf/racademy.urdf.xacro`
+- Gazebo resource paths: set from the package share parent
+- robot spawns from the `robot_description` topic
+- `/clock` is bridged back to ROS 2
+
+Core ideas in the launch file:
 
 ```python
-#!/usr/bin/env python3
-"""Launch Gazebo Sim, spawn racademy_ws, bridge the clock, and use /use_sim_time."""
+pkg_share = get_package_share_directory("racademy_description")
+share_root = str(Path(pkg_share).parent)
 
-import os
-from pathlib import Path
-
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import (
-    DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable, ExecuteProcess
+robot_description = ParameterValue(
+    Command([FindExecutable(name="xacro"), " ", model]),
+    value_type=str,
 )
-from launch.substitutions import Command, LaunchConfiguration, EnvironmentVariable
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue
 
+rsp_node = Node(
+    package="robot_state_publisher",
+    executable="robot_state_publisher",
+    parameters=[{"robot_description": robot_description, "use_sim_time": use_sim_time}],
+)
 
-def generate_launch_description() -> LaunchDescription:
-    # Locate package share and its *parent* to expose meshes to Gazebo
-    pkg_share = get_package_share_directory("racademy_ws_description")
-    share_root = str(Path(pkg_share).parent)
+gazebo = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+        os.path.join(get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py")
+    ),
+    launch_arguments={"gz_args": ["-r -v 4 ", world]}.items(),
+)
 
-    # ─────────────────── Launch Arguments ───────────────────
-    model_arg = DeclareLaunchArgument(
-        name="model",
-        default_value=os.path.join(pkg_share, "urdf", "racademy_ws.urdf.xacro"),
-        description="Absolute path to robot URDF/Xacro file",
-    )
+spawn_entity = Node(
+    package="ros_gz_sim",
+    executable="create",
+    arguments=["-topic", "robot_description", "-name", entity_name],
+)
 
-    # ─────────────────── Environment Variables ──────────────
-    ign_resource = SetEnvironmentVariable(
-        name="IGN_GAZEBO_RESOURCE_PATH",
-        value=[share_root, ":", EnvironmentVariable("IGN_GAZEBO_RESOURCE_PATH", default_value="")],
-    )
-    gz_resource = SetEnvironmentVariable(
-        name="GZ_SIM_RESOURCE_PATH",
-        value=[share_root, ":", EnvironmentVariable("GZ_SIM_RESOURCE_PATH", default_value="")],
-    )
-
-    # Echo the result for debugging
-    log_env = ExecuteProcess(
-        cmd=["bash", "-lc", "echo IGN_GAZEBO_RESOURCE_PATH=$IGN_GAZEBO_RESOURCE_PATH"],
-        output="screen",
-    )
-
-    # ─────────────────── Robot Description ──────────────────
-    robot_description = ParameterValue(Command(["xacro ", LaunchConfiguration("model")]), value_type=str)
-
-    rsp_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        parameters=[{"robot_description": robot_description, "use_sim_time": True}],
-    )
-
-    # ─────────────────── Gazebo Server & Client ─────────────
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            os.path.join(get_package_share_directory("ros_gz_sim"), "launch"), "/gz_sim.launch.py"
-        ]),
-        launch_arguments=[("gz_args", [" -v 4", " -r", " empty.sdf"])],
-    )
-
-    spawn_entity = Node(
-        package="ros_gz_sim",
-        executable="create",
-        output="screen",
-        arguments=["-topic", "robot_description", "-name", "racademy_ws"],
-    )
-
-    clock_bridge = Node(
-        package="ros_gz_bridge",
-        executable="parameter_bridge",
-        arguments=["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"],
-    )
-
-    return LaunchDescription([
-        log_env,
-        model_arg,
-        ign_resource,
-        gz_resource,
-        rsp_node,
-        gazebo,
-        spawn_entity,
-        clock_bridge,
-    ])
+clock_bridge = Node(
+    package="ros_gz_bridge",
+    executable="parameter_bridge",
+    arguments=["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"],
+)
 ```
 
-### 4.1  Major Sections Explained
+### 4.1 Launch Arguments
 
-| **Block**                        | **What it does**                                                                                                               |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| _Environment Variables_          | Extend `IGN_GAZEBO_RESOURCE_PATH` and `GZ_SIM_RESOURCE_PATH` so Gazebo can locate your meshes **outside** its default install. |
-| `robot_state_publisher`          | Publishes TF and `/robot_description`; `use_sim_time=True` tells rclpy to read the simulator clock.                            |
-| `ros_gz_sim … /gz_sim.launch.py` | Starts the Ignition Gazebo server (`gz gui` if you add `-g` later) with an *empty world*.                                      |
-| `ros_gz_sim create`              | Spawns the robot by subscribing to `/robot_description`.                                                                       |
-| `ros_gz_bridge parameter_bridge` | Relays the `/clock` topic so all ROS nodes tick in sync.                                                                       |
+The launch file exposes:
 
-## 5  Package Installation Updates
+- `model`: xacro path, defaulting to `racademy.urdf.xacro`
+- `world`: Gazebo world, default `empty.sdf`
+- `entity_name`: spawned entity name, default `racademy`
+- `use_sim_time`: default `true`
 
-### 5.1  `CMakeLists.txt`
+### 4.2 Major Sections Explained
 
-The rule added in Chapter 5 (`launch rviz`) already installs the *launch* directory, so no change is needed.
+| **Block** | **What it does** |
+| --- | --- |
+| `SetEnvironmentVariable` | Extends `IGN_GAZEBO_RESOURCE_PATH` and `GZ_SIM_RESOURCE_PATH` so Gazebo can find installed meshes and resources. |
+| `robot_state_publisher` | Publishes TF and `/robot_description` from the xacro-expanded model. |
+| `ros_gz_sim ... gz_sim.launch.py` | Starts Gazebo Sim with the selected world. |
+| `ros_gz_sim create` | Spawns the robot from `/robot_description`. |
+| `ros_gz_bridge parameter_bridge` | Bridges `/clock` so ROS nodes use simulation time. |
+| `TimerAction` | Delays spawn slightly so the robot description publisher is already alive. |
 
-### 5.2  `package.xml`
+## 5 Package Installation Updates
 
-Add simulator dependencies:
+### 5.1 `CMakeLists.txt`
+
+The package now installs all required runtime folders:
+
+```cmake
+install(
+  DIRECTORY meshes rviz launch urdf
+  DESTINATION share/${PROJECT_NAME}
+)
+```
+
+This is important because Gazebo and RViz both use installed resources, not just source files.
+
+### 5.2 `package.xml`
+
+The package needs these runtime dependencies:
 
 ```xml
+<exec_depend>xacro</exec_depend>
 <exec_depend>ros_gz_sim</exec_depend>
 <exec_depend>ros_gz_bridge</exec_depend>
 ```
 
-(These pull in `gz-sim`, `gz-gui`, `ign-physics` libraries, etc.)
+You still keep the display dependencies from earlier chapters:
 
-Re‑build and source:
+- `robot_state_publisher`
+- `joint_state_publisher_gui`
+- `rviz2`
+- `ros2launch`
 
-```bash
-$ colcon build --symlink-install
-$ source install/setup.bash
-```
-
-> **Troubleshooting** – If the linker complains about *ignition‑math* versions, ensure you installed the matching `ros-humble-ros-gz-*` meta‑packages for your Ubuntu release.
-
-## 6  Running the Simulator
+Rebuild and source:
 
 ```bash
-$ ros2 launch racademy_ws_description gazebo.launch.py
+cd /github/racademy_ws
+colcon build --packages-select racademy_description
+source install/setup.bash
 ```
 
-- Gazebo GUI opens with an **empty plane**.
-- The shell prints `SpawnEntity: Success` and places *racademy_ws* at (0,0,0).
-- The clock bridge starts; verify with:
-  ```bash
-  $ ros2 topic echo /clock | head
-  ```
-- Inspect TF in RViz (fixed frame `base_footprint`).
-- Drag wheel sliders (still running from Chapter 4) to see the robot roll.
+## 6 Running the Simulator
 
----
+Launch Gazebo Sim with the robot:
 
-## 7  Next Steps
+```bash
+ros2 launch racademy_description gazebo.launch.py
+```
 
-- Add a **differential_drive_controller** via ROS 2 Control for velocity commands.
-- Insert sensors (IMU, depth camera) and bridge their topics.
-- Swap the ground plane for a realistic warehouse world.
+What should happen:
 
-— **End of Chapter 6**
+- Gazebo opens with an empty world
+- `robot_state_publisher` publishes TF using the xacro-expanded robot
+- `ros_gz_sim create` spawns `racademy`
+- the `/clock` bridge starts
+
+Useful checks:
+
+```bash
+ros2 topic echo /clock
+ros2 topic echo /robot_description
+```
+
+You can also override launch arguments:
+
+```bash
+ros2 launch racademy_description gazebo.launch.py world:=empty.sdf entity_name:=racademy
+```
+
+## 7 Next Steps
+
+- Add a proper drive plugin or ROS 2 control setup for wheel velocity commands.
+- Add camera or IMU sensor plugins if you want simulated perception topics.
+- Replace `empty.sdf` with a custom world once the robot model is stable.
+
+— **End of Chapter 6**
