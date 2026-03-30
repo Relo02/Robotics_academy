@@ -28,5 +28,6 @@ echo Type 'exit' to leave the container.
 echo ==========================================
 echo.
 
-docker exec -it ros2-gazebo bash
+docker compose up -d
+docker compose exec -it ros2-gazebo bash
 pause
