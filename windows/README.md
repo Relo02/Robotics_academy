@@ -53,7 +53,7 @@ start.bat
 mkdir ros2_ws\src -Force
 
 # Build the image (first time only, takes 10-20 min)
-docker-compose build
+docker compose build
 
 # Start the container
 docker compose up -d
