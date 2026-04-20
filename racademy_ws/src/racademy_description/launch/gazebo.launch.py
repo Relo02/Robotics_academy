@@ -21,6 +21,7 @@ def generate_launch_description() -> LaunchDescription:
     world = LaunchConfiguration("world")
     entity_name = LaunchConfiguration("entity_name")
     use_sim_time = LaunchConfiguration("use_sim_time")
+    is_ignition = LaunchConfiguration("is_ignition")
 
     model_arg = DeclareLaunchArgument(
         name="model",
@@ -42,6 +43,11 @@ def generate_launch_description() -> LaunchDescription:
         default_value="true",
         description="Use Gazebo simulation time",
     )
+    is_ignition_arg = DeclareLaunchArgument(
+        name="is_ignition",
+        default_value="false",
+        description="Use the legacy ign_ros2_control plugin instead of gz_ros2_control",
+    )
 
     ign_resource = SetEnvironmentVariable(
         name="IGN_GAZEBO_RESOURCE_PATH",
@@ -53,7 +59,7 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     robot_description = ParameterValue(
-        Command([FindExecutable(name="xacro"), " ", model]),
+        Command([FindExecutable(name="xacro"), " ", model, " is_ignition:=", is_ignition]),
         value_type=str,
     )
 
@@ -90,6 +96,7 @@ def generate_launch_description() -> LaunchDescription:
         world_arg,
         entity_name_arg,
         use_sim_time_arg,
+        is_ignition_arg,
         ign_resource,
         gz_resource,
         rsp_node,

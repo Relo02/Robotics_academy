@@ -2,9 +2,11 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="racademy">
 
+  <xacro:arg name="is_ignition" default="false"/>
   <xacro:include filename="$(find racademy_description)/urdf/materials.xacro"/>
   <xacro:include filename="$(find racademy_description)/urdf/macros.xacro"/>
   <xacro:include filename="$(find racademy_description)/urdf/racademy.gazebo.xacro"/>
+  <xacro:include filename="$(find racademy_description)/urdf/racademy.ros2_control.xacro"/>
 
   <!-- Link frames are centered on the visible meshes. -->
   <xacro:property name="base_height" value="0.03947"/>

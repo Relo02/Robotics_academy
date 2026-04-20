@@ -35,4 +35,22 @@
     <fdir1>1 0 0</fdir1>
   </gazebo>
 
+  <xacro:if value="$(arg is_ignition)">
+    <gazebo>
+      <plugin filename="ign_ros2_control-system"
+              name="ign_ros2_control::IgnitionROS2ControlPlugin">
+        <parameters>$(find racademy_controller)/config/racademy_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+
+  <xacro:unless value="$(arg is_ignition)">
+    <gazebo>
+      <plugin filename="gz_ros2_control-system"
+              name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find racademy_controller)/config/racademy_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:unless>
+
 </robot>

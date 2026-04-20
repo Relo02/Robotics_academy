@@ -144,6 +144,196 @@ Why simplify collisions:
 - simulation is faster
 - the wheels behave more predictably on the ground
 
+### 3.4 Full `racademy.urdf.xacro`
+
+Below is the full current file used in the package:
+
+```xml
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="racademy">
+
+  <xacro:include filename="$(find racademy_description)/urdf/materials.xacro"/>
+  <xacro:include filename="$(find racademy_description)/urdf/macros.xacro"/>
+  <xacro:include filename="$(find racademy_description)/urdf/racademy.gazebo.xacro"/>
+
+  <!-- Link frames are centered on the visible meshes. -->
+  <xacro:property name="base_height" value="0.03947"/>
+  <xacro:property name="chassis_mass" value="0.15"/>
+  <xacro:property name="wheel_mass" value="0.05"/>
+  <xacro:property name="computer_mass" value="0.01"/>
+  <xacro:property name="camera_mass" value="0.01"/>
+  <xacro:property name="chassis_size_x" value="0.20"/>
+  <xacro:property name="chassis_size_y" value="0.12"/>
+  <xacro:property name="chassis_size_z" value="0.08"/>
+  <xacro:property name="wheel_radius" value="0.032"/>
+  <xacro:property name="wheel_width" value="0.026"/>
+  <xacro:property name="computer_size_x" value="0.06"/>
+  <xacro:property name="computer_size_y" value="0.09"/>
+  <xacro:property name="computer_size_z" value="0.05"/>
+  <xacro:property name="camera_size_x" value="0.03"/>
+  <xacro:property name="camera_size_y" value="0.046"/>
+  <xacro:property name="camera_size_z" value="0.044"/>
+
+  <!--  A.  Base frames  -->
+  <link name="base_footprint"/>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${chassis_mass}"/>
+      <xacro:box_inertia m="${chassis_mass}" x="${chassis_size_x}" y="${chassis_size_y}" z="${chassis_size_z}"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.01747 0.00047 -0.00647" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://racademy_description/meshes/duckiebot_frame_only.dae"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0.01747 0.00047 -0.00647" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://racademy_description/meshes/duckiebot_frame_only.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 ${base_height}" rpy="0 0 0"/>
+  </joint>
+
+  <!--  B.  Left wheel  -->
+  <link name="left_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${wheel_mass}"/>
+      <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.00001 -0.05957 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://racademy_description/meshes/duckiebot_leftwheel.dae"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="wheel_left_joint" type="continuous">
+    <origin xyz="0.01746 0.06004 -0.00647" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="left_wheel_link"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="20.0" velocity="20.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!--  C.  Right wheel  -->
+  <link name="right_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${wheel_mass}"/>
+      <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.00001 0.06057 -0.00005" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://racademy_description/meshes/duckiebot_rightwheel.dae"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="wheel_right_joint" type="continuous">
+    <origin xyz="0.01748 -0.06010 -0.00642" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="right_wheel_link"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="20.0" velocity="20.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!--  D.  Computer  -->
+  <link name="computer_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${computer_mass}"/>
+      <xacro:box_inertia
+        m="${computer_mass}"
+        x="${computer_size_x}"
+        y="${computer_size_y}"
+        z="${computer_size_z}"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.02264 -0.00963 -0.07067" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://racademy_description/meshes/duckiebot_computer.dae"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${computer_size_x} ${computer_size_y} ${computer_size_z}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="computer_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="computer_link"/>
+    <origin xyz="0.04011 0.01010 0.06420" rpy="0 0 0"/>
+  </joint>
+
+  <!--  E.  Camera  -->
+  <link name="camera_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${camera_mass}"/>
+      <xacro:box_inertia
+        m="${camera_mass}"
+        x="${camera_size_x}"
+        y="${camera_size_y}"
+        z="${camera_size_z}"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.06257 0.00045 -0.07443" rpy="0 -0.1 0"/>
+      <geometry>
+        <mesh filename="package://racademy_description/meshes/duckiebot_camera.dae"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0.1 0"/>
+      <geometry>
+        <box size="${camera_size_x} ${camera_size_y} ${camera_size_z}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+    <origin xyz="0.08192 0.0 0.06161" rpy="0 0.1 0"/>
+  </joint>
+
+</robot>
+```
+
 ## 4 Creating `gazebo.launch.py`
 
 Place the file in `racademy_ws/src/racademy_description/launch/gazebo.launch.py`.
