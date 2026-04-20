@@ -309,9 +309,10 @@ This single command:
 
 ```bash
 # Inside the container (new terminal)
-docker exec -it ros2_course_container bash
-source ~/ros2_ws/examples/fws_robot_harmonic/install/setup.bash
+cd ~/ros2_ws/examples/fws_robot_harmonic/
+source install/setup.bash
 
+# Important: sync the ros2 /clock topic with gazebo simulation. Otherwise the robot motion will lag 
 ros2 launch velocity_pub four_ws_control.launch.py use_sim_time:=true
 ```
 
