@@ -321,7 +321,7 @@ ros2 launch velocity_pub four_ws_control.launch.py use_sim_time:=true
 ```bash
 # You can use teleop_keyboard for interactive control
 # It will open a prompt where you can use keys to drive the robot and for imposing rotations
-ros2 run teleop_keyboard teleop_keyboard
+ros2 run teleop_twist_keyboard teleop_twist_keyboard   
 
 # Another option is to publish directly on /cmd_vel with custom values. For example:
 # Drive forward
