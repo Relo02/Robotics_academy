@@ -279,8 +279,8 @@ where $l$ is the wheel base, $d$ is the steering track, and $r_{wheel}$ is the w
 ```bash
 cd Robotics_academy/linux(or windows)
 xhost +local:docker          # grant X11 access
-docker compose up -d
-docker exec -it ros2_course_container bash
+
+# Go to your OS folder and run start.sh or start.bat
 ```
 
 ### 2 — Build the workspace (inside the container)
