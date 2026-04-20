@@ -64,6 +64,7 @@ RUN apt-get update && apt-get install -y \
     ros-humble-slam-toolbox \
     ros-humble-navigation2 \
     ros-humble-nav2-bringup \
+    ros-humble-moveit \
     && rm -rf /var/lib/apt/lists/*
 
 # Install system and Python dependencies
@@ -73,6 +74,10 @@ RUN apt-get update && apt-get install -y \
     python3-smbus \
     ros-humble-tf-transformations \
     ros-humble-foxglove-bridge \
+    ros-humble-ign-ros2-control \
+    ros-humble-ign-ros2-control-demos \
+    ros-humble-plotjuggler \
+    ros-humble-plotjuggler-ros \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for the students
