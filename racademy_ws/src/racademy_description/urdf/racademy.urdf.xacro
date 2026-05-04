@@ -25,7 +25,6 @@
   <xacro:property name="camera_size_x" value="0.03"/>
   <xacro:property name="camera_size_y" value="0.046"/>
   <xacro:property name="camera_size_z" value="0.044"/>
-
   <!--  A.  Base frames  -->
   <link name="base_footprint"/>
 
@@ -180,6 +179,15 @@
     <parent link="base_link"/>
     <child link="camera_link"/>
     <origin xyz="0.08192 0.0 0.06161" rpy="0 0.1 0"/>
+  </joint>
+
+  <!--  F.  Camera optical frame (Z-forward, X-right, Y-down convention for vision) -->
+  <link name="camera_optical_frame"/>
+
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5707963 0 -1.5707963"/>
   </joint>
 
 </robot>

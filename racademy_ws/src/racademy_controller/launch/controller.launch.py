@@ -17,15 +17,15 @@ def generate_launch_description() -> LaunchDescription:
         output="screen",
     )
 
-    velocity_controller = Node(
+    diff_drive_controller = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
-            "simple_velocity_controller",
+            "diff_drive_controller",
             "--controller-manager",
             "/controller_manager",
         ],
         output="screen",
     )
 
-    return LaunchDescription([broadcaster, velocity_controller])
+    return LaunchDescription([broadcaster, diff_drive_controller])

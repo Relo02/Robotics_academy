@@ -1,20 +1,23 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>racademy_controller</name>
+  <name>racademy_slam</name>
   <version>0.0.0</version>
-  <description>Controller configuration and launch files for the racademy robot.</description>
+  <description>SLAM bringup package for the racademy robot.</description>
   <maintainer email="ubuntu@todo.todo">ubuntu</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>controller_manager</exec_depend>
-  <exec_depend>diff_drive_controller</exec_depend>
-  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>ros2launch</exec_depend>
-  <exec_depend>velocity_controllers</exec_depend>
+
+  <exec_depend>racademy_description</exec_depend>
+  <exec_depend>racademy_controller</exec_depend>
+
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

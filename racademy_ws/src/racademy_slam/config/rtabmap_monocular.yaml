@@ -1,0 +1,39 @@
+rtabmap:
+  ros__parameters:
+    # Sensor mode: monocular RGB camera + wheel odometry, no depth sensor
+    subscribe_depth: false
+    subscribe_rgb: true
+    subscribe_stereo: false
+    subscribe_scan: false
+    subscribe_scan_cloud: false
+    approx_sync: true
+
+    # Coordinate frames
+    frame_id: base_link
+    map_frame_id: map
+    odom_frame_id: odom
+
+    # Publish map -> odom TF
+    publish_tf: true
+
+    # Visual feature detection (ORB-based)
+    Kp/MaxFeatures: "400"
+    Kp/DetectorStrategy: "6"     # ORB detector
+
+    # Loop closure acceptance
+    Vis/MinInliers: "15"
+    Vis/InlierDistance: "0.1"
+
+    # SLAM memory
+    Mem/IncrementalMemory: "true"
+    Mem/STMSize: "30"
+
+    # Detection rate (Hz) — keep low for monocular to allow feature tracking time
+    Rtabmap/DetectionRate: "1"
+    Rtabmap/TimeThr: "700"
+    Rtabmap/MemoryThr: "0"
+
+    # 2D output occupancy grid
+    Grid/CellSize: "0.05"
+    Grid/RangeMax: "0.0"
+    Grid/FromDepth: "false"
